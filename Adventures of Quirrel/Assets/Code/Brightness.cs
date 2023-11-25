@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering.PostProcessing;
 
+
 public class Brightness : MonoBehaviour
 {
     public Slider brightnessSlider; 

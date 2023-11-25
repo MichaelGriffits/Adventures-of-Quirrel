@@ -6,12 +6,11 @@ using UnityEngine.UI;
     
 public class OptionsMenuLoader : MonoBehaviour
 {
-   public GameObject OpenWindow;
+    public GameObject OpenWindow;
 
     public void LoadOptions()
     {
         OpenWindow.SetActive(true);
-    }        
-
+    }
     
 }
