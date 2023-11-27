@@ -5,9 +5,8 @@ using UnityEngine;
 public class MeleeWeapon : MonoBehaviour
 {
     //How much damage the melee attack does
-    [SerializeField]
-    private int damageAmount = 20;
-    //Reference to Character script which contains the value if the player is facing left or right; if you don't have this or it's named something different, either omit it or change the class name to what your Character script is called
+    [SerializeField] private int damageAmount = 20;
+    //Reference to Character script which contains the value if the player is facing left or right
     private PlayerMovement character;
     //Reference to the Rigidbody2D on the player
     private Rigidbody2D rb;
@@ -20,102 +19,99 @@ public class MeleeWeapon : MonoBehaviour
     //Determines if the melee strike is downwards to perform extra force to fight against gravity
     private bool downwardStrike;
 
+    //Function that runs at the start of the code
+    //References the Character script on the player
+    //References the Rigidbody2D on the player
+    //References the MeleeAttackManager script on the player
     private void Start()
     {
-        //Reference to the Character script on the player; if you don't have this or it's named something different, either omit it or change the class name to what your Character script is called
         character = GetComponentInParent<PlayerMovement>();
-        //Reference to the Rigidbody2D on the player
         rb = GetComponentInParent<Rigidbody2D>();
-        //Reference to the MeleeAttackManager script on the player
         MeleeAttack = GetComponentInParent<MeleeAttack>();
     }
 
+    //Function that runs once per frame
+    //Runs the HandleMovement function
     private void FixedUpdate()
     {
-        //Uses the Rigidbody2D AddForce method to move the player in the correct direction
         HandleMovement();
     }
 
+    //Function that runs on collision
+    //Checks to see if the GameObject the MeleeWeapon is colliding with has an EnemyHealth script
+    //If it is runs the HandleCollision function
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //Checks to see if the GameObject the MeleeWeapon is colliding with has an EnemyHealth script
         if (collision.GetComponent<EnemyHealth>())
         {
-            //Method that checks to see what force can be applied to the player when melee attacking
             HandleCollision(collision.GetComponent<EnemyHealth>());
         }
     }
 
+    //Function that handles the collsion 
+    //Checks to see if the GameObject allows for upward force and if the strike is downward as well as grounded
+    //If so sets direction to up, and changes the bools to true
+    //If not then changes the bool for a normal attack
+    //Checks to see if the melee attack is a standard melee attack
+    //If so then checks what direction the the player is facing and alters the dircetion accordingly
+    //Then deals damage to the enemy
     private void HandleCollision(EnemyHealth objHealth)
     {
-        //Checks to see if the GameObject allows for upward force and if the strike is downward as well as grounded
         if (objHealth.giveUpwardForce && Input.GetAxis("Vertical") < 0 && !character.isGrounded)
         {
-            //Sets the direction variable to up
             direction = Vector2.up;
-            //Sets downwardStrike to true
             downwardStrike = true;
-            //Sets collided to true
             collided = true;
         }
         if (Input.GetAxis("Vertical") > 0 && !character.isGrounded)
         {
-            //Sets the direction variable to up
             direction = Vector2.down;
-            //Sets collided to true
             collided = true;
         }
-        //Checks to see if the melee attack is a standard melee attack
         if ((Input.GetAxis("Vertical") <= 0 && character.isGrounded) || Input.GetAxis("Vertical") == 0)
         {
-            //Checks to see if the player is facing left; if you don't have a character script, the commented out line of code can also check for that
-            if (character.IsFacingRight) //(transform.parent.localScale.x < 0)
+            if (character.IsFacingRight)
             {
-                //Sets the direction variable to right
                 direction = Vector2.left;
             }
             else
             {
-                //Sets the direction variable to right left
                 direction = Vector2.right;
             }
-            //Sets collided to true
             collided = true;
         }
-        //Deals damage in the amount of damageAmount
         objHealth.Damage(damageAmount);
-        //Coroutine that turns off all the bools related to melee attack collision and direction
         StartCoroutine(NoLongerColliding());
     }
 
-    //Method that makes sure there should be movement from a melee attack and applies force in the appropriate direction based on the amount of force from the melee attack manager script
+    //Function that Handles the movement of down attacks
+    //Checks to see if the GameObject should allow the player to move when melee attack collides
+    //If the attack was in a downward direction
+    //Propels the player upwards by the amount of upwardsForce in the meleeAttackManager script
+    //Else propels the player backwards by the amount of horizontalForce in the meleeAttackManager script
     private void HandleMovement()
     {
-        //Checks to see if the GameObject should allow the player to move when melee attack colides
         if (collided)
         {
-            //If the attack was in a downward direction
             if (downwardStrike)
             {
-                //Propels the player upwards by the amount of upwardsForce in the meleeAttackManager script
                 rb.AddForce(direction * MeleeAttack.upwardsForce);
             }
             else
             {
-                //Propels the player backwards by the amount of horizontalForce in the meleeAttackManager script
                 rb.AddForce(direction * MeleeAttack.defaultForce);
             }
         }
     }
 
     //Coroutine that turns off all the bools that allow movement from the HandleMovement method
+    //Waits in the amount of time setup by the meleeAttackManager script
+    //Turns off the collided bool
+    //Turns off the downwardStrike bool
     private IEnumerator NoLongerColliding()
     {
-        //Waits in the amount of time setup by the meleeAttackManager script; this is by default .1 seconds
         yield return new WaitForSeconds(MeleeAttack.movementTime);
-        //Turns off the collided bool
         collided = false;
-        //Turns off the downwardStrike bool
         downwardStrike = false;
     }
 }

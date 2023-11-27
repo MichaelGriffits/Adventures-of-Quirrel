@@ -4,27 +4,46 @@ using UnityEngine;
 
 public class EnemyFollowPlayer : MonoBehaviour
 {
+    //Creates a FLOAT in the Unity IDE
     public float speed;
+    //Creates a FLOAT in the Unity IDE
     public float LineOfSite;
+    //Creates a FLOAT in the Unity IDE
     public float ShootingRange;
+    //Creates a FLOAT in the Unity IDE
     public float FireRate;
+    //Creates a private FLOAT in the script
     private float NextFireTime;
 
+    //Creates a GameObject in the Unity IDE
     public GameObject pointA;
+    //Creates a GameObject in the Unity IDE
     public GameObject pointB;
+    //Creates a GameObject in the Unity IDE
     public GameObject bullet;
+    //Creates a GameObject in the Unity IDE
     public GameObject bulletParent;
-    private Transform playerPos;
-    [SerializeField] private Rigidbody2D rb;    
+
+    //Creates a private Transform in the script
+    private Transform playerPos; 
+    //Creates a private Transform in the script
     private Transform  currentPoint;
+    //Creates a private RIGIDBODY2D in the script that is accesable in the Unity IDE
+    [SerializeField] private Rigidbody2D rb;   
 
-
+    //Function that runs on start
+    //Sets the variable "playerPos" to the transform of the GameObject with tag 'Player'
+    //Sets the variabele "currentPoint" to the transform of the GameObject "pointB"
     void Start()
     {
         playerPos = GameObject.FindGameObjectWithTag("Player").transform;
         currentPoint = pointB.transform;
     }
 
+    //Function that runs on every frame
+    //Calculates the distance from the player
+    //If the player is within range and fires a bullet at the player
+    //Also runs thorugh the movement of the enemy between the two points
     void Update()
     {
         float distanceFromPlayer = Vector2.Distance(playerPos.position, transform.position);
@@ -63,6 +82,7 @@ public class EnemyFollowPlayer : MonoBehaviour
 
     }
 
+    //Draw Gizmos for visualizing objects in the Scene view
     private void  OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;

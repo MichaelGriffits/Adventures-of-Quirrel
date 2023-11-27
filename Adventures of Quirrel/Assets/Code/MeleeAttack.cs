@@ -16,34 +16,25 @@ public class MeleeAttack : PlayerMovement
     public Animator meleeAnimator;
     //The Animator component on the player
     public Animator PlayerANIM;
-    //The Character script on the player; this script on my project manages the grounded state, so if you have a different script for that reference that script
+    //The Character script on the player
     public PlayerMovement character;
 
-
-    //Run this method instead of Initialization if you don't have any scripts inheriting from each other
+    //Function that runs on start of code
+    //Sets the animator componenet up
+    //Sets the varilbe Character up so it can access the playermovement script
+    //Sets th melee animator component up
     void Start()
     {
-        //The Animator component on the player
         PlayerANIM = GetComponent<Animator>();
-        //The Character script on the player; this script on my project manages the grounded state, so if you have a different script for that reference that script
         PlayerMovement character = new PlayerMovement();
-        //The animator on the meleePrefab
         meleeAnimator = GameObject.FindGameObjectWithTag("weapon").GetComponent<Animator>();
-        
     }   
 
-
-    // protected override void Initialization()
-    // {
-    //     //This grabs all the references already deinde by the PlayerMovement script
-    //     base.Initialization();
-    //     //The animator on the meleePrefab
-    //     meleeAnimator = GetComponentInChildren<MeleeWeapon>().gameObject.GetComponent<Animator>();
-    // }
-
+    //Function that runs every frame
+    //Runs the CheckInput function aswell as the AnimatorController function
+    //Checks if the player is moving
     void Update()
     {
-        //Method that checks to see what keys are being pressed
         CheckInput();
         AnimatorController();   
      	
@@ -60,45 +51,33 @@ public class MeleeAttack : PlayerMovement
 		
     }
 
+    //Function that runs in the update
+    //Checks what kind of directional input is be inputed by the user aswell as if it is grounded
+    //Depending on which it is it plays different animations
     void CheckInput()
     {
-        //Checks to see if Backspace key is pressed which I define as melee attack; you can of course change this to anything you would want
         if (Input.GetKeyDown(KeyCode.J))
         {
-            //Sets the meleeAttack bool to true
             meleeAttack = true;
             if (meleeAttack && Input.GetAxis("Vertical") > 0)
             {
-                //Turns on the animation for the player to perform an upward melee attack
                 PlayerANIM.SetTrigger("UpwardMelee");
-                //Turns on the animation on the melee weapon to show the swipe area for the melee attack upwards
                 meleeAnimator.SetTrigger("UpwardMeleeSwipe");
             }
-            //Checks to see if meleeAttack is true and pressing down while also not grounded
             if (meleeAttack && Input.GetAxis("Vertical") < 0 && !character.isGrounded)
             {
-                //Turns on the animation for the player to perform a downward melee attack
                 PlayerANIM.SetTrigger("DownwardMelee");
-                //Turns on the animation on the melee weapon to show the swipe area for the melee attack downwards
                 meleeAnimator.SetTrigger("DownwardMeleeSwipe");
             }
-            //Checks to see if meleeAttack is true and not pressing any direction
-            if ((meleeAttack && Input.GetAxis("Vertical") == 0)
-                 //OR if melee attack is true and pressing down while grounded
-                || meleeAttack && (Input.GetAxis("Vertical") < 0 && character.isGrounded))
+            if ((meleeAttack && Input.GetAxis("Vertical") == 0) || meleeAttack && (Input.GetAxis("Vertical") < 0 && character.isGrounded))
             {
-                //Turns on the animation for the player to perform a forward melee attack
                 PlayerANIM.SetTrigger("ForwardMelee");
-                //Turns on the animation on the melee weapon to show the swipe area for the melee attack forwards
                 meleeAnimator.SetTrigger("ForwardMeleeSwipe");
             }
         }
         else
         {
-            //Turns off the meleeAttack bool
             meleeAttack = false;
-        }
-        //Checks to see if meleeAttack is true and pressing up
-        
+        }        
     }
 }   

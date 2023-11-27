@@ -12,7 +12,7 @@ public class PlayerData : ScriptableObject
 	public float maxFallSpeed; //Maximum fall speed (terminal velocity) of the player when falling.
 	[Space(5)]
 	public float fastFallGravityMult; //Larger multiplier to the player's gravityScale when they are falling and a downwards input is pressed.
-									  //Seen in games such as Celeste, lets the player fall extra fast if they wish.
+									  //Lets the player fall extra fast if they wish.
 	public float maxFastFallSpeed; //Maximum fall speed(terminal velocity) of the player when performing a faster fall.
 	
 	[Space(20)]
@@ -78,9 +78,7 @@ public class PlayerData : ScriptableObject
 		//Calculate jumpForce using the formula (initialJumpVelocity = gravity * timeToJumpApex)
 		jumpForce = Mathf.Abs(gravityStrength) * jumpTimeToApex;
 
-		#region Variable Ranges
 		runAcceleration = Mathf.Clamp(runAcceleration, 0.01f, runMaxSpeed);
 		runDecceleration = Mathf.Clamp(runDecceleration, 0.01f, runMaxSpeed);
-		#endregion
 	}
 }

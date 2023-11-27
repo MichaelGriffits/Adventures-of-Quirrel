@@ -6,13 +6,13 @@ using UnityEngine.UI;
 
 public class BackButton : MonoBehaviour
 {
-   public GameObject CurrentWindow;
+    //Creates a GameObject in the Unity IDE called current window
+    public GameObject CurrentWindow;
 
+    //Function for altering if "CurrentWindow is active"
     public void Back()
     {
         CurrentWindow.SetActive(false);
 
-    }        
-
-    
+    }          
 }

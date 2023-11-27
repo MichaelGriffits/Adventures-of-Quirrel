@@ -4,140 +4,119 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-    //Determines if this GameObject should receive damage or not
+    //Creates a private BOOL in the script that can be accesed by the Unity IDE
     [SerializeField]
     private bool damageable = true;
-    //The total number of health points the GameObject should have
+    //Creates a private INT in the script that can be accesed by the Unity IDE
     [SerializeField]
     private int healthAmount = 100;
-    //The max amount of time after receiving damage that the enemy can no longer receive damage; this is to help prevent the same melee attack dealing damage multiple times
+    //Creates a private FLOAT in the script that can be accesed by the Unity IDE
     [SerializeField]
     private float invulnerabilityTime = .2f;
-    //Allows the player to be forced up when performing a downward strike above the enemy
+    
+    //Creates a BOOl in the Unity IDE
     public bool giveUpwardForce = true;
-    //Bool that manages if the enemy can receive more damage
+    //Creates a private BOOL in the script
     private bool hit;
-    //The current amount after receiving damage the enemy has
+   
+    //Creates a private INT in the script
     private int currentHealth;
+    //Sets the varible "playerhealth" to access the script "PlayerHealth"
     PlayerHealth playerHealth;
+    //Sets the varible "HpBar" to access the script "EnemyHpBar"
     [SerializeField] EnemyHpBar HpBar;
 
-      #region Datamembers
+    //Creates a private MATERIAL in the scrip that can be accessed by the Unity IDE
+    [SerializeField] private Material flashMaterial;
+    //Creates a private FLOAT in the script that can be accesed by the Unity IDE
+    [SerializeField] private float duration;
 
-        #region Editor Settings
+    //Creates a private SPRITERENDERER in the script
+    private SpriteRenderer spriteRenderer;
+    //Creates a private MATERIAL in the script
+    private Material originalMaterial;
+    //Creates a private COROUTINE in the script
+    private Coroutine flashRoutine;
 
-        [Tooltip("Material to switch to during the flash.")]
-        [SerializeField] private Material flashMaterial;
-
-        [Tooltip("Duration of the flash.")]
-        [SerializeField] private float duration;
-
-        #endregion
-        #region Private Fields
-
-        // The SpriteRenderer that should flash.
-        private SpriteRenderer spriteRenderer;
-       
-        // The material that was in use, when the script started.
-        private Material originalMaterial;
-
-        // The currently running coroutine.
-        private Coroutine flashRoutine;
-
-        #endregion
-        #endregion
-
-
-        #region Methods
-
-        #region Unity Callbacks
+    //Function that runs at the start of the script
+    //Sets the enemy to the max amount of health when the scene loads
+    //Gets the SpriteRenderer to be used
+    //Gets the material that the SpriteRenderer uses, so it can switch back to it after the flash ended
+    //Gets the script from the player 
+    //Sets up the HpBar system for the enemy
     private void Start()
     {
-        //Sets the enemy to the max amount of health when the scene loads
         currentHealth = healthAmount;  
-         // Get the SpriteRenderer to be used,
-        // alternatively you could set it from the inspector.
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // Get the material that the SpriteRenderer uses,
-        // so we can switch back to it after the flash ended.
         originalMaterial = spriteRenderer.material;  
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
         HpBar = GetComponentInChildren<EnemyHpBar>();
         HpBar.UpdateHealthBar(currentHealth, healthAmount);
-
-
     }
 
+    //Function that gets called to damage the enemey
+    //First checks to see if the player is currently in an invulnerable state; if not it runs the logic
+    //Reduces currentHealthPoints by the amount value that was set by whatever script called this function
+    //If currentHealthPoints is below zero, enemy is dead, and then we handle all the logic to manage the dead state 
+    //Also heals the player and increases the score
     public void Damage(int amount)
     {
-        //First checks to see if the player is currently in an invulnerable state; if not it runs the following logic.
         if (damageable && !hit && currentHealth > 0)
         {
-            //First sets hit to true
             hit = true;
-            //Reduces currentHealthPoints by the amount value that was set by whatever script called this method, for this tutorial in the OnTriggerEnter2D() method
             currentHealth -= amount;
             HpBar.UpdateHealthBar(currentHealth, healthAmount);
 
-            Flash();
-            //If currentHealthPoints is below zero, player is dead, and then we handle all the logic to manage the dead state
+            Flash();   
+
             if (currentHealth <= 0)
             {
                 playerHealth.Heal(1);
-                //Caps currentHealth to 0 for cleaner code
                 currentHealth = 0;
                 ScoreScript.scoreValue += 1;
-                //Removes GameObject from the scene; this should probably play a dying animation in a method that would handle all the other death logic, but for the test it just disables it from the scene
                 gameObject.SetActive(false);
             }
             else
             {
-                //Coroutine that runs to allow the enemy to receive damage again
                 StartCoroutine(TurnOffHit());
             }
         }
     }
 
     //Coroutine that runs to allow the enemy to receive damage again
+    //Wait in the amount of invulnerabilityTime, which by default is .2 seconds
+    //Turn off the hit bool so the enemy can receive damage again
     private IEnumerator TurnOffHit()
     {
-        //Wait in the amount of invulnerabilityTime, which by default is .2 seconds
         yield return new WaitForSeconds(invulnerabilityTime);
-        //Turn off the hit bool so the enemy can receive damage again
         hit = false;
     }
-    
-        #endregion
 
-        public void Flash()
+    //Function that runs when enemy is hit
+    //If the flashRoutine is not null, then it is currently running
+    //In this case, we should stop it first
+    //Multiple FlashRoutines the same time would cause bugs
+    //Start the Coroutine, and store the reference for it
+    public void Flash()
+    {
+        if (flashRoutine != null)
         {
-            // If the flashRoutine is not null, then it is currently running.
-            if (flashRoutine != null)
-            {
-                // In this case, we should stop it first.
-                // Multiple FlashRoutines the same time would cause bugs.
-                StopCoroutine(flashRoutine);
-            }
-
-            // Start the Coroutine, and store the reference for it.
-            flashRoutine = StartCoroutine(FlashRoutine());
+            StopCoroutine(flashRoutine);
         }
+        flashRoutine = StartCoroutine(FlashRoutine());
+    }
 
-        private IEnumerator FlashRoutine()
-        {
-            // Swap to the flashMaterial.
-            spriteRenderer.material = flashMaterial;
+    //Coutoutine that runs to make the nemy flash when hit
+    //Swap to the flashMaterial
+    //Pause the execution of this function for "duration" seconds
+    //After the pause, swap back to the original material
+    // Set the routine to null, signaling that it's finished
+    private IEnumerator FlashRoutine()
+    {
+        spriteRenderer.material = flashMaterial;
+        yield return new WaitForSeconds(duration);
+        spriteRenderer.material = originalMaterial;
 
-            // Pause the execution of this function for "duration" seconds.
-            yield return new WaitForSeconds(duration);
-
-            // After the pause, swap back to the original material.
-            spriteRenderer.material = originalMaterial;
-
-            // Set the routine to null, signaling that it's finished.
-            flashRoutine = null;
-        }
-
-        #endregion
+        flashRoutine = null;
+    }
 }
