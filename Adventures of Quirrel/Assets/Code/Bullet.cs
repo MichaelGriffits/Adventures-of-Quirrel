@@ -4,62 +4,59 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    //Creates an INT in the Unity IDE
+    // Public variables accessible from the Unity editor
     public int bulletDamage;
-    //Creates a FLOAT in the Unity IDE
     private float bulletSpeed = 17f;
 
-    //Creates a private FLOAT in the script
+    // Private variables for internal use in the script
     private float spriteSize;
-    //Creates a private TRANSFORM in the script
     private Transform playerTransform;
-    //Creates a private TRANSFORM in the script
     private Transform selfTransform;
-    //Creates a private VECTOR3 in the script
     private Vector3 playerPosition;
-    //Creates a private VECTOR3 in the script
-    private Vector3 direction ;
-    
-    //Sets the varible "playerhealth" to access the script "PlayerHealth"
-    PlayerHealth playerHealth;
+    private Vector3 direction;
+    private PlayerHealth playerHealth;
 
-    //Function that runs on the start of code
-    //Gets all the components for the private varibles
-    void Start() 
+    //Start is called before the first frame update
+    //Finding and assigning the player's transform
+    //Calculating half the sprite size for collision purposes
+    //Getting the PlayerHealth script component
+    //Calculating the direction towards the player
+    void Start()
     {
-        spriteSize = GetComponent<SpriteRenderer>().bounds.size.x / 2;
-        bulletSpeed = 17f;
-        playerPosition = playerTransform.position;
-        selfTransform = GetComponent<Transform>();
-        direction = (playerPosition - selfTransform.position).normalized ;
         playerTransform = GameObject.FindWithTag("Player").GetComponent<Transform>();
+        selfTransform = GetComponent<Transform>();
+        spriteSize = GetComponent<SpriteRenderer>().bounds.size.x / 2;
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
+
+        playerPosition = playerTransform.position;
+        direction = (playerPosition - selfTransform.position).normalized;
     }
 
-    //Function that runs every frame
-    //Moves the bullet in the direction it was shot
-    void Update () 
+    // Update is called every frame
+    // Moving the bullet in the calculated direction
+    void Update()
     {
         selfTransform.position += direction * bulletSpeed * Time.deltaTime;
     }
-    
-    //Functions that runs when the collider has a collision
-    //Checks to see if the GameObject it has collided with has not got a tag "Enemy"
-    //If it does it destroys
-    //Then Checks to see if what it collided with was a player
-    //If it was it runs the function from the PlayerHealth sript and damages the player
+
+    // OnCollisionEnter2D is called when this collider/rigidbody has begun touching another rigidbody/collider
+    // Check if collided with an enemy and ignore collision
+    // Check if collided with something other than player or enemy, destroy the bullet
+    // If collided with player, damage player and destroy the bullet
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag != "Enemy")
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            Destroy (gameObject);
-
-            if (collision.gameObject.tag == "Player")
-            {
-                playerHealth.Damage(1);
-            }
-
+            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collision.collider);
+        }
+        else if (!collision.gameObject.CompareTag("Player"))
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            playerHealth.Damage(1);
+            Destroy(gameObject);
         }
     }
 }
- 
